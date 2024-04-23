@@ -1,0 +1,19 @@
+[project]
+name = "pytune"
+version = "0.0.0dev"
+description = "TBA"  # TODO
+readme = "README.md"
+requires-python = "==3.11"
+authors = [
+    { name = "Jan Iwaszkiewicz", email = "jiwaszkiewicz6@gmail.com" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "pygame",
+    "sounddevice >= 0.4.6",
+    "soundfile >= 0.12",
+    "coloredlogs",
+]
