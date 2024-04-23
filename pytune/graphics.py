@@ -81,6 +81,20 @@ class BoardCard:
         self._draw_name(window)
         self._draw_device(window)
 
+    def switch_color(self):
+        """Switch colors between light and dark."""
+        self.mode = ColorModes.DARK if self.mode == ColorModes.LIGHT else ColorModes.LIGHT
+
+    def highlight(self, active, action):
+        """
+        Highlight or remove it from card.
+        If active is True, set dark color -- highligth the card.
+        If active is False, set light color -- deselect the card.
+        Action is then performed on the player, modifing the state.
+        """
+        self.mode = ColorModes.DARK if active else ColorModes.LIGHT
+        action(self.player)  # Use this card player as self for action!
+
 
 class PlayerCard(BoardCard):
     def __init__(self, index, color, name, device, player):
@@ -124,12 +138,10 @@ class PlayerCard(BoardCard):
 
 class HostCard(BoardCard):
     def __init__(self, index, color, name, device):
-        super().__init__(index, color, name, device)
-        self.host = Host(index)
+        super().__init__(index, color, name, device, Host(index))
 
     def _draw_message(self, window):
-        # TODO: make Host class? (now in player.py)
-        match self.host.host_state:
+        match self.player.host_state:
             case HostState.IDLE:
                 message = ""
                 text_surface = font_medium.render(message, True, FONT_PALETTE[Colors.BLACK][self.mode])

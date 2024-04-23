@@ -70,7 +70,7 @@ class Game:
         print(f"Press 'H' as HOST to say hi...")
         print(f"Press spacebar as HOST to skip...")
         self.current_state = GameState.INTRO
-        board.host_card.host.set_intro()
+        board.host_card.player.set_intro()
         while self.current_state == GameState.INTRO:
             for event in pygame.event.get():
                 # Host actions:
@@ -78,18 +78,13 @@ class Game:
                     self.current_state = GameState.IDLE
                 # Host can check the device - "say hi"
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_h:
-                    # Switch colors on action:
-                    if board.host_card.mode == ColorModes.LIGHT:
-                        board.host_card.mode = ColorModes.DARK
-                    else:
-                        board.host_card.mode = ColorModes.LIGHT
+                    board.host_card.switch_color()  # Switch colors on action.
                 # Check for 'Esc' key press to quit the game
                 self.check_quit(event)
             # Update the graphics
             board.draw()
         # Set Host to active state and indicate that input is needed:
-        board.host_card.mode = ColorModes.DARK
-        board.host_card.host.set_active()
+        board.host_card.highlight(active=True, action=Host.set_active)
         # Begin player introductions:
         for player in self.players:
             print(f"Welcome Player #{player.number}")
@@ -119,22 +114,17 @@ class Game:
                     # Player can check the device - "say hi"
                     if event.type == pygame.JOYBUTTONDOWN:
                         if event.instance_id == player.number:
-                            # Switch colors on action:
-                            if card.mode == ColorModes.LIGHT:
-                                card.mode = ColorModes.DARK
-                            else:
-                                card.mode = ColorModes.LIGHT
+                            card.switch_color()  # Switch colors on action.
                     # Check for 'Esc' key press to quit the game
                     self.check_quit(event)
                 # Update the graphics
                 board.draw()
             # Restore cards and players to original state:
-            card.mode = ColorModes.LIGHT
-            card.player.set_idle()
+            card.highlight(active=False, action=Player.set_idle)
         # Ends music with fade out effect
         pygame.mixer.music.fadeout(5000)  # time in ms, TODO: parametrize
         # Set Host to active state:
-        board.host_card.host.set_active()
+        board.host_card.player.set_active()
         # Set all player to ACTIVE to show message:
         for card in board.player_cards:
             card.player.set_active()
@@ -153,20 +143,16 @@ class Game:
                     self.who_stopped = event.instance_id
                     self.current_state = GameState.RANKING_ROUND
                     # Get card and update it to highlight:
-                    card = board.get_player_card(self.who_stopped)
-                    card.mode = ColorModes.DARK
-                    card.player.set_answering()
+                    board.get_player_card(self.who_stopped).highlight(active=True, action=Host.set_answering)
                     # Set Host to ranking state and indicate that input is needed:
-                    board.host_card.mode = ColorModes.DARK
-                    board.host_card.host.set_ranking()
+                    board.host_card.highlight(active=True, action=Host.set_ranking)
                     print(f"Song stopped by the Player #{self.who_stopped}!")
                     print(f"Give points to the Player #{self.who_stopped}...")
 
     def host_continue_song(self, board):
         # Set Host to active state and remove highlight.
         # This indicates that host started the music again.
-        board.host_card.mode = ColorModes.LIGHT
-        board.host_card.host.set_active()
+        board.host_card.highlight(active=False, action=Host.set_active)
         if self.sound.continue_current_song() == 1:
             self.quit()
 
@@ -174,19 +160,16 @@ class Game:
         # Set Host to active state and keep highlighted.
         # This indicates that host needs to either skip
         # the round or resume music.
-        board.host_card.mode = ColorModes.DARK
-        board.host_card.host.set_active()
+        board.host_card.highlight(active=True, action=Host.set_active)
         if self.sound.pause_current_song() == 1:
             self.quit()
 
     def host_next_song(self, board):
         # Set Host to active state and remove the highlight:
-        board.host_card.mode = ColorModes.LIGHT
-        board.host_card.host.set_active()
+        board.host_card.highlight(active=False, action=Host.set_active)
         # Restore all players and cards:
         for card in board.player_cards:
-            card.mode = ColorModes.LIGHT
-            card.player.set_active()
+            card.highlight(active=False, action=Player.set_active)
         # Play next song and check returned code.
         # If sound code equals to 1, there is no more songs,
         # the game ends here.
@@ -201,12 +184,10 @@ class Game:
     def host_skip_song(self, board):
         # Set Host to active state and keep highlighted.
         # This indicates that host needs to play next song.
-        board.host_card.mode = ColorModes.DARK
-        board.host_card.host.set_active()
+        board.host_card.highlight(active=True, action=Host.set_active)
         # Restore all players and cards:
         for card in board.player_cards:
-            card.mode = ColorModes.LIGHT
-            card.player.set_active()
+            card.highlight(active=False, action=Player.set_active)
         # Skip the song:
         self.sound.pause_current_song()
         self.who_stopped = Actors.HOST
@@ -218,14 +199,11 @@ class Game:
             if self.who_stopped == player.number:
                 player.points -= 1
                 # Get card and update it to eliminated:
-                card = board.get_player_card(self.who_stopped)
-                card.mode = ColorModes.LIGHT
-                card.player.set_eliminated()
+                board.get_player_card(self.who_stopped).highlight(active=False, action=Player.set_eliminated)
                 # Set Host to active state and keep highlighted.
                 # This indicates that host needs to either skip
                 # the round or play again.
-                board.host_card.mode = ColorModes.DARK
-                board.host_card.host.set_active()
+                board.host_card.highlight(active=True, action=Host.set_active)
                 print(f"Penalty points to the Player #{self.who_stopped}!")
         # Put the player on disabled players list:
         self.disabled_players += [self.who_stopped]
@@ -241,14 +219,11 @@ class Game:
             if self.who_stopped == player.number:
                 player.points += 1
                 # Get card and update it to highlight:
-                card = board.get_player_card(self.who_stopped)
-                card.mode = ColorModes.DARK
-                card.player.set_win()
+                board.get_player_card(self.who_stopped).highlight(active=True, action=Player.set_win)
                 # Set Host to active state and keep highlighted.
                 # This indicates that host needs to skip or
                 # play the song for the rest to check.
-                board.host_card.mode = ColorModes.DARK
-                board.host_card.host.set_active()
+                board.host_card.highlight(active=True, action=Host.set_active)
                 print(f"Points awarded to the Player #{self.who_stopped}!")
         self.who_stopped = Actors.HOST
         self.current_state = GameState.IDLE
