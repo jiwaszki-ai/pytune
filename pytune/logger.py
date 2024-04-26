@@ -17,7 +17,6 @@ def create_level(logger, constant, name, color):
 
 def init_logger(name):
     # Initialize logger
-    print(name)
     logger = logging.getLogger(name)
     coloredlogs.install(level='DEBUG')
 
