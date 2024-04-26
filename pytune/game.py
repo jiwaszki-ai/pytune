@@ -11,6 +11,7 @@ from .sound import Sound
 
 logger = init_logger(__name__)
 
+
 class GameState(Enum):
     ERROR = -1
     QUIT = 0
@@ -41,7 +42,9 @@ class Game:
         if number_of_joysticks > 0:
             for joystick_id in range(0, number_of_joysticks):
                 # Create a player
-                players.append(Player(joystick_id, pygame.joystick.Joystick(joystick_id)))
+                players.append(
+                    Player(joystick_id, pygame.joystick.Joystick(joystick_id))
+                )
                 players[joystick_id].joystick.init()
                 logger.debug(f"DEBUG: {players[joystick_id].number}")
                 logger.debug(f"DEBUG: {players[joystick_id].joystick}")
@@ -94,7 +97,9 @@ class Game:
             logger.debug(f"DEBUG: {player.joystick}")
             # Shake the joystick:
             player.joystick.rumble(low_frequency=0.5, high_frequency=1.0, duration=2)
-            logger.host(f"Press spacebar as HOST to show next Player #{player.number}...")
+            logger.host(
+                f"Press spacebar as HOST to show next Player #{player.number}..."
+            )
             # Set game state:
             self.current_state = GameState.INTRO
             # Get player card:
@@ -105,7 +110,9 @@ class Game:
                 for event in pygame.event.get():
                     # Host actions:
                     if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                        player.joystick.rumble(low_frequency=0.5, high_frequency=1.0, duration=2)
+                        player.joystick.rumble(
+                            low_frequency=0.5, high_frequency=1.0, duration=2
+                        )
                         # player.joystick.stop_rumble()
                         self.current_state = GameState.IDLE
                     # Continue song:
@@ -146,7 +153,9 @@ class Game:
                     self.who_stopped = event.instance_id
                     self.current_state = GameState.RANKING_ROUND
                     # Get card and update it to highlight:
-                    board.get_player_card(self.who_stopped).highlight(active=True, action=Host.set_answering)
+                    board.get_player_card(self.who_stopped).highlight(
+                        active=True, action=Host.set_answering
+                    )
                     # Set Host to ranking state and indicate that input is needed:
                     board.host_card.highlight(active=True, action=Host.set_ranking)
                     logger.player(f"Song stopped by the Player #{self.who_stopped}!")
@@ -202,7 +211,9 @@ class Game:
             if self.who_stopped == player.number:
                 player.points -= 1
                 # Get card and update it to eliminated:
-                board.get_player_card(self.who_stopped).highlight(active=False, action=Player.set_eliminated)
+                board.get_player_card(self.who_stopped).highlight(
+                    active=False, action=Player.set_eliminated
+                )
                 # Set Host to active state and keep highlighted.
                 # This indicates that host needs to either skip
                 # the round or play again.
@@ -222,7 +233,9 @@ class Game:
             if self.who_stopped == player.number:
                 player.points += 1
                 # Get card and update it to highlight:
-                board.get_player_card(self.who_stopped).highlight(active=True, action=Player.set_win)
+                board.get_player_card(self.who_stopped).highlight(
+                    active=True, action=Player.set_win
+                )
                 # Set Host to active state and keep highlighted.
                 # This indicates that host needs to skip or
                 # play the song for the rest to check.
@@ -256,7 +269,7 @@ class Game:
                 self.host_pause_song(board)
         elif self.current_state == GameState.RANKING_ROUND:
             # Give points to the player who stopped.
-            # If player who stopped is the HOST, this is disabled.                        
+            # If player who stopped is the HOST, this is disabled.
             if self.who_stopped != Actors.HOST:
                 # Check for "0" key press (-1 points)
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_0:

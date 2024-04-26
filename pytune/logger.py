@@ -3,7 +3,7 @@ import coloredlogs, logging
 
 def create_level(logger, constant, name, color):
     logging.addLevelName(constant, name)
-    coloredlogs.DEFAULT_LEVEL_STYLES[name.lower()] = {'color': color}
+    coloredlogs.DEFAULT_LEVEL_STYLES[name.lower()] = {"color": color}
 
     def level_function(msg, *args, **kwargs):
         # Capture logger from here
@@ -18,7 +18,7 @@ def create_level(logger, constant, name, color):
 def init_logger(name):
     # Initialize logger
     logger = logging.getLogger(name)
-    coloredlogs.install(level='DEBUG')
+    coloredlogs.install(level="DEBUG")
 
     # Add custom commands to logger
     logger.game = create_level(logger, logging.INFO + 5, "GAME", "white")
