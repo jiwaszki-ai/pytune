@@ -75,7 +75,7 @@ class Game:
         pygame.mixer.music.queue(os.path.join("./assets", "intro_middle.wav"), loops=-1)
         # Welcome as Host:
         logger.host(f"Press 'H' as HOST to say hi...")
-        logger.host(f"Press spacebar as HOST to skip...")
+        logger.host(f"Press spacebar as HOST to introduce next player...")
         self.current_state = GameState.INTRO
         board.host_card.player.set_intro()
         while self.current_state == GameState.INTRO:
@@ -99,7 +99,7 @@ class Game:
             # Shake the joystick:
             player.joystick.rumble(low_frequency=0.5, high_frequency=1.0, duration=2)
             logger.host(
-                f"Press spacebar as HOST to show next Player #{player.number}..."
+                f"Press spacebar as HOST to introduce next player..."
             )
             # Set game state:
             self.current_state = GameState.INTRO
