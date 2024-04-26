@@ -34,6 +34,7 @@ class Game:
         self.current_state = GameState.IDLE
         self.who_stopped = Actors.HOST
         self.sound = Sound(path, random_order)
+        self.round_counter = 0
 
     def _init_players(self):
         # Initialize joystick(s) and Players
@@ -190,6 +191,8 @@ class Game:
         # Clear disabled players list:
         self.disabled_players = []
         self.current_state = GameState.MUSIC_ROUND
+        # Add next round:
+        self.round_counter += 1
         logger.sound("Song started!")
         logger.game("Players, press anything to stop the song!")
 
@@ -304,5 +307,5 @@ class Game:
                     break
 
             # Update the graphics
-            board.draw()
+            board.draw(round_counter=self.round_counter)
             time.sleep(0.1)

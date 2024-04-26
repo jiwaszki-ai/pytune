@@ -206,6 +206,29 @@ class HostCard(BoardCard):
     def __init__(self, index, color, name, device):
         super().__init__(index, color, name, device, Host(index))
 
+    def _draw_round_counter(self, window, round_counter=0):
+        text_surface = font_medium.render(
+            "Round", True, FONT_PALETTE[Colors.BLACK][self.mode]
+        )
+        text_rect = text_surface.get_rect(
+            center=(
+                self.index * RECTANGLE_WIDTH + RECTANGLE_WIDTH // 2,
+                WINDOW_HEIGHT // 2,
+            )
+        )
+        window.blit(text_surface, text_rect)
+
+        text_surface = font_big.render(
+            str(round_counter), True, FONT_PALETTE[Colors.BLACK][self.mode]
+        )
+        text_rect = text_surface.get_rect(
+            center=(
+                self.index * RECTANGLE_WIDTH + RECTANGLE_WIDTH // 2,
+                WINDOW_HEIGHT // 1.8,
+            )
+        )
+        window.blit(text_surface, text_rect)
+
     def _draw_message(self, window):
         match self.player.host_state:
             case HostState.IDLE:
@@ -278,8 +301,9 @@ class HostCard(BoardCard):
             case _:
                 raise RuntimeError("Unknown host state!")
 
-    def draw(self, window):
+    def draw(self, window, round_counter=0):
         super().draw(window)
+        self._draw_round_counter(window, round_counter=round_counter)
         self._draw_message(window)
 
 
@@ -325,7 +349,7 @@ class GameBoard:
                 return card
 
     # Draw gameboard
-    def draw(self):
+    def draw(self, round_counter=0):
         # Draw Player cards from left:
         for card in self.player_cards:
             card.draw(self.window)
@@ -333,6 +357,6 @@ class GameBoard:
         for card in self.placeholder_cards:
             card.draw(self.window)
         # Draw Host on the right:
-        self.host_card.draw(self.window)
+        self.host_card.draw(self.window, round_counter=round_counter)
         # Update display
         pygame.display.update()
