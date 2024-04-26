@@ -219,7 +219,7 @@ class HostCard(BoardCard):
         window.blit(text_surface, text_rect)
 
         text_surface = font_big.render(
-            str(round_counter), True, FONT_PALETTE[Colors.BLACK][self.mode]
+            str(round_counter) if round_counter > 0 else "INTRO", True, FONT_PALETTE[Colors.BLACK][self.mode]
         )
         text_rect = text_surface.get_rect(
             center=(
