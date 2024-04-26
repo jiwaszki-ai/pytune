@@ -1,7 +1,6 @@
 import pygame
 
-from pytune import Game
-from pytune import BoardCard, Colors, GameBoard
+from pytune import Game, GameBoard
 from pytune import WINDOW_HEIGHT, WINDOW_WIDTH
 
 
@@ -16,10 +15,6 @@ def main():
     board = GameBoard(window, game.players)
 
     game.show_intro(board)
-
-    print("Press spacebar to start the song.")
-    print("Press '0' for no points, '1' for points, and 'Esc' to quit.")
-
     game.start_game(board)
 
 if __name__ == "__main__":

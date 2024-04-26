@@ -4,9 +4,12 @@ from enum import Enum
 import pygame
 
 from .graphics import ColorModes
+from .logger import init_logger
 from .player import Host, Player
 from .sound import Sound
 
+
+logger = init_logger(__name__)
 
 class GameState(Enum):
     ERROR = -1
@@ -40,10 +43,10 @@ class Game:
                 # Create a player
                 players.append(Player(joystick_id, pygame.joystick.Joystick(joystick_id)))
                 players[joystick_id].joystick.init()
-                print(f"DEBUG: {players[joystick_id].number}")
-                print(f"DEBUG: {players[joystick_id].joystick}")
-                print(f"DEBUG: {players[joystick_id].joystick.get_init()}")
-                print(f"DEBUG: {players[joystick_id].joystick.get_name()}")
+                logger.debug(f"DEBUG: {players[joystick_id].number}")
+                logger.debug(f"DEBUG: {players[joystick_id].joystick}")
+                logger.debug(f"DEBUG: {players[joystick_id].joystick.get_init()}")
+                logger.debug(f"DEBUG: {players[joystick_id].joystick.get_name()}")
         else:
             raise RuntimeError("No joysticks detected!")
         return players
@@ -53,7 +56,7 @@ class Game:
     def quit(self):
         self.current_state = GameState.QUIT
         self.sound.pause_current_song()
-        print("Game exited.")
+        logger.game("Game exited.")
         pygame.quit()
         exit()
 
@@ -67,8 +70,8 @@ class Game:
         pygame.mixer.music.play()
         pygame.mixer.music.queue(os.path.join("./assets", "intro_middle.wav"), loops=-1)
         # Welcome as Host:
-        print(f"Press 'H' as HOST to say hi...")
-        print(f"Press spacebar as HOST to skip...")
+        logger.host(f"Press 'H' as HOST to say hi...")
+        logger.host(f"Press spacebar as HOST to skip...")
         self.current_state = GameState.INTRO
         board.host_card.player.set_intro()
         while self.current_state == GameState.INTRO:
@@ -87,11 +90,11 @@ class Game:
         board.host_card.highlight(active=True, action=Host.set_active)
         # Begin player introductions:
         for player in self.players:
-            print(f"Welcome Player #{player.number}")
-            print(f"DEBUG: {player.joystick}")
+            logger.game(f"Welcome Player #{player.number}")
+            logger.debug(f"DEBUG: {player.joystick}")
             # Shake the joystick:
             player.joystick.rumble(low_frequency=0.5, high_frequency=1.0, duration=2)
-            print(f"Press spacebar as HOST to show next Player #{player.number}...")
+            logger.host(f"Press spacebar as HOST to show next Player #{player.number}...")
             # Set game state:
             self.current_state = GameState.INTRO
             # Get player card:
@@ -146,8 +149,8 @@ class Game:
                     board.get_player_card(self.who_stopped).highlight(active=True, action=Host.set_answering)
                     # Set Host to ranking state and indicate that input is needed:
                     board.host_card.highlight(active=True, action=Host.set_ranking)
-                    print(f"Song stopped by the Player #{self.who_stopped}!")
-                    print(f"Give points to the Player #{self.who_stopped}...")
+                    logger.player(f"Song stopped by the Player #{self.who_stopped}!")
+                    logger.host(f"Give points to the Player #{self.who_stopped}...")
 
     def host_continue_song(self, board):
         # Set Host to active state and remove highlight.
@@ -178,8 +181,8 @@ class Game:
         # Clear disabled players list:
         self.disabled_players = []
         self.current_state = GameState.MUSIC_ROUND
-        print("Song started!")
-        print("Players, press anything to stop the song!")
+        logger.sound("Song started!")
+        logger.game("Players, press anything to stop the song!")
 
     def host_skip_song(self, board):
         # Set Host to active state and keep highlighted.
@@ -192,7 +195,7 @@ class Game:
         self.sound.pause_current_song()
         self.who_stopped = Actors.HOST
         self.current_state = GameState.IDLE
-        print(f"Song skipped by the HOST! Play next song by pressing space!")
+        logger.host(f"Song skipped by the HOST! Play next song by pressing space!")
 
     def host_give_minus(self, board):
         for player in self.players:
@@ -204,7 +207,7 @@ class Game:
                 # This indicates that host needs to either skip
                 # the round or play again.
                 board.host_card.highlight(active=True, action=Host.set_active)
-                print(f"Penalty points to the Player #{self.who_stopped}!")
+                logger.game(f"Penalty points to the Player #{self.who_stopped}!")
         # Put the player on disabled players list:
         self.disabled_players += [self.who_stopped]
         # Change the who_stopped to HOST:
@@ -212,7 +215,7 @@ class Game:
         # Continue music round:
         # TODO: should music start automatically?
         self.current_state = GameState.MUSIC_ROUND  # GameState.IDLE
-        print(f"Now HOST is in control!")
+        logger.host(f"Now HOST is in control!")
 
     def host_give_plus(self, board):
         for player in self.players:
@@ -224,10 +227,10 @@ class Game:
                 # This indicates that host needs to skip or
                 # play the song for the rest to check.
                 board.host_card.highlight(active=True, action=Host.set_active)
-                print(f"Points awarded to the Player #{self.who_stopped}!")
+                logger.game(f"Points awarded to the Player #{self.who_stopped}!")
         self.who_stopped = Actors.HOST
         self.current_state = GameState.IDLE
-        print(f"Now HOST is in control!")
+        logger.host(f"Now HOST is in control!")
 
     def listen_to_host(self, event, board):
         # Start the music
@@ -263,6 +266,8 @@ class Game:
                     self.host_give_plus(board)
 
     def start_game(self, board):
+        logger.host("Press '0' for no points, '1' for points, and 'Esc' to quit.")
+        logger.host("Press spacebar to start the song.")
         while True:
             # Music Round -- Player/Host
             for event in pygame.event.get():

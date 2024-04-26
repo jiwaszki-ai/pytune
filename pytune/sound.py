@@ -2,6 +2,11 @@ import os
 from random import shuffle
 import pygame
 
+from .logger import init_logger
+
+
+logger = init_logger(__name__)
+
 
 class Sound:
     def __init__(self, path, random_order=True):
@@ -30,20 +35,20 @@ class Sound:
         try:
             self.current_song = self.songs.pop(0)
         except IndexError:
-            print("No more songs! The game ends here!")
+            logger.game("No more songs! The game ends here!")
             return 1
         # Play song and log info:
-        print(f"Playing: {self.current_song}")
+        logger.song(f"Playing: {self.current_song}")
         pygame.mixer.music.load(os.path.join(self.path, self.current_song))
         pygame.mixer.music.play()
         return 0
 
     def continue_current_song(self):
-        print(f"Continuing: {self.current_song}")
+        logger.sound(f"Continuing: {self.current_song}")
         pygame.mixer.music.unpause()
         return 0
 
     def pause_current_song(self):
-        print(f"Stopping: {self.current_song}")
+        logger.sound(f"Stopping: {self.current_song}")
         pygame.mixer.music.pause()
         return 0
